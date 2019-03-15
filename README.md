@@ -5,7 +5,7 @@ These instructions show Knative Building, Knative Serving and Gloo integration.
 * [Setup](#setup)
 * [Deploy existing example](#deploy-existing-example-image)
 * [Build locally and deploy using Knative Serving](#build-locally-and-deploy-using-knative-serving)
-* [Build using Knative Build, and deploy using Knative Serving](build-using-knative-build-and-deploy-using-knative-serving)
+* [Build using Knative Build, and deploy using Knative Serving](#build-using-knative-build-and-deploy-using-knative-serving)
 
 ## Setup
 
