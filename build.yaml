@@ -6,10 +6,11 @@ spec:
   serviceAccountName: build-bot
   source:
     git:
-      url: https://github.com/scranton/helloworld-knative
-      revision: test
+      url: https://github.com/{ Docker Hub username }/helloworld-knative
+      revision: master
   template:
     name: kaniko
     arguments:
       - name: IMAGE
-        value: docker.io/scottcranton/helloworld-go
+        value: docker.io/{ Docker Hub username }/helloworld-go
+  timeout: 10m

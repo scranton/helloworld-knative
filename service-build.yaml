@@ -1,0 +1,33 @@
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: helloworld-go
+  namespace: default
+spec:
+  runLatest:
+    configuration:
+      build:
+        apiVersion: build.knative.dev/v1alpha1
+        kind: Build
+        metadata:
+          name: kaniko-build
+        spec:
+          serviceAccountName: build-bot
+          source:
+            git:
+              url: https://github.com/{ GitHub username }/helloworld-knative
+              revision: master
+          template:
+            name: kaniko
+            arguments:
+              - name: IMAGE
+                value: docker.io/{ Docker Hub username }/helloworld-go
+          timeout: 10m
+      revisionTemplate:
+        spec:
+          container:
+            image: docker.io/{ Docker Hub username }/helloworld-go
+            imagePullPolicy: Always
+            env:
+              - name: TARGET
+                value: "Go Sample v1"

@@ -9,7 +9,8 @@ spec:
       revisionTemplate:
         spec:
           container:
-            image: docker.io/scottcranton/helloworld-go
+            image: docker.io/{ docker hub username }/helloworld-go
+            imagePullPolicy: Always
             env:
               - name: TARGET
                 value: "Go Sample v1"
