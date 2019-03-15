@@ -5,7 +5,7 @@ These instructions show Knative Serving and Gloo integration.
 ## Setup
 
 These instructions assume you are running on a clean, recent [minikube](https://kubernetes.io/docs/setup/minikube/)
-install locally.
+install locally, and that you also have `docker` and `kubectl` available locally.
 
 ## Install Gloo
 
@@ -16,14 +16,14 @@ brew install glooctl
 ```
 
 Then assuming you've got a running `minikube`, and `kubectl` setup against that minikube instance, i.e. `kubectl config current-context`
-returns `minikube`, run the following to install Gloo with Knative Serving 
+returns `minikube`, run the following to install Gloo with Knative Serving.
 
 
-```bash
+```shell
 glooctl install knative
 ```
 
-## Build and deploy example 
+## Build and deploy example
 
 1. Setup to use `minikube` docker daemon so example image is available to minikube.
 
@@ -35,7 +35,7 @@ glooctl install knative
 
     ```shell
     docker build -t scottcranton/helloworld-go .
-    
+
     docker push scottcranton/helloworld-go
     ```
 
@@ -55,19 +55,19 @@ glooctl install knative
 
     Call Service
 
-    ```bash
+    ```shell
     CLUSTERINGRESS_URL=$(glooctl proxy url --name clusteringress-proxy)
-    curl -H "helloworld-knative" ${CLUSTERINGRESS_URL}
+    curl -H "Host: helloworld-go.default.example.com" ${CLUSTERINGRESS_URL}
     ```
 
 ## Cleanup
 
-```bash
+```shell
 kubectl delete --filename service.yaml
 ```
 
 ## See Also
 
-* <https://gloo.solo.io/getting_started/kubernetes/gloo_with_knative/>
 * <https://github.com/knative/docs/blob/master/install/getting-started-knative-app.md>
 * <https://github.com/knative/docs>
+* <https://gloo.solo.io/getting_started/kubernetes/gloo_with_knative/>
