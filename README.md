@@ -34,13 +34,13 @@ I've already built this example, and have hosted the image publicly in my [Docke
 To use Knative to serve up this existing image, you just need to do the following command.
 
 ```shell
-kubectl apply -f service.yaml
+kubectl apply --filename service.yaml
 ```
 
 Verify domain URL for service. Should be `helloworld-go.default.example.com`
 
 ```shell
-kubectl get ksvc helloworld-go -n default  --output=custom-columns=NAME:.metadata.name,DOMAIN:.status.domain
+kubectl get ksvc helloworld-go -n default --output=custom-columns=NAME:.metadata.name,DOMAIN:.status.domain
 ```
 
 And call service
@@ -75,7 +75,7 @@ kubectl apply --filename service.yaml
 Verify domain URL for service. Should be `helloworld-go.default.example.com`
 
 ```shell
-kubectl get ksvc helloworld-go -n default  --output=custom-columns=NAME:.metadata.name,DOMAIN:.status.domain
+kubectl get ksvc helloworld-go -n default --output=custom-columns=NAME:.metadata.name,DOMAIN:.status.domain
 ```
 
 And Test your service
@@ -120,8 +120,8 @@ metadata:
     build.knative.dev/docker-0: https://index.docker.io/v1/
 type: kubernetes.io/basic-auth
 stringData:
-  username: < docker hub username | base64 >
-  password: < docker hub passwork | base64 >
+  username: { Docker Hub username | base64 }
+  password: { Docker Hub password | base64 }
 ```
 
 Update `service.yaml` with your Docker Hub information.
@@ -138,7 +138,7 @@ spec:
       revisionTemplate:
         spec:
           container:
-            image: docker.io/{ docker hub username }/helloworld-go
+            image: docker.io/{ Docker Hub username }/helloworld-go
             imagePullPolicy: Always
             env:
               - name: TARGET
