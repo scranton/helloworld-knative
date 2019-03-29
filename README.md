@@ -187,7 +187,7 @@ spec:
 To Deploy, apply the following manifests
 
 ```shell
-kubectl apply --filename servet.yaml --filename serviceaccount.yaml --filename service-build.yaml
+kubectl apply --filename secret.yaml --filename serviceaccount.yaml --filename service-build.yaml
 ```
 
 Then you can watch the build and deployment happening. 
