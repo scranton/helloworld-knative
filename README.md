@@ -45,7 +45,7 @@ kubectl get kservice helloworld-go \
   --output=custom-columns=NAME:.metadata.name,DOMAIN:.status.domain
 ```
 
-And call service. Note: the `curl --connect-to` option is only required when calling locally against minikube as that
+And call the service. Note: the `curl --connect-to` option is only required when calling locally against minikube as that
 option will add the correct host and sni headers to the request, and send the request to the host and port pair returned
 from `glooctl proxy address`.
 
@@ -53,7 +53,7 @@ from `glooctl proxy address`.
 curl --connect-to helloworld-go.default.example.com:80:$(glooctl proxy address --name clusteringress-proxy) http://helloworld-go.default.example.com
 ```
 
-To Cleanup, delete the resources
+To cleanup, delete the resources
 
 ```shell
 kubectl delete --filename service.yaml
@@ -116,7 +116,7 @@ kubectl get pods --namespace knative-build
 
 I'd encourage forking this GitHub repository so you can push code changes and see them in your environment.
 
-Create a Kubernetes secret for your Docker Hub account that will allow Knative build to push your image. You also need to annotate the secret to indicate its for Docker. More details in [Guiding credential selection](https://www.knative.dev/docs/build/auth/#guiding-credential-selection)
+Create a Kubernetes secret for your Docker Hub account that will allow Knative build to push your image. You also need to annotate the secret to indicate its for Docker. More details in [Guiding credential selection](https://www.knative.dev/docs/build/auth/#guiding-credential-selection).
 
 ```shell
 kubectl create secret generic basic-user-pass \
@@ -196,7 +196,7 @@ spec:
                 value: "Go Sample v1"
 ```
 
-To Deploy, apply the following manifests
+To Deploy, apply the manifests
 
 ```shell
 kubectl apply \
@@ -213,7 +213,7 @@ kubectl get pods --watch
 Once you see all the `helloworld-go-0000x-deployment-....` pods are ready, then you can Ctrl+C to escape the watch, and
 then test your deployment.
 
-Verify domain URL for service. Should be `helloworld-go.default.example.com`
+Verify the domain URL for service. Should be `helloworld-go.default.example.com`
 
 ```shell
 kubectl get kservice helloworld-go \
