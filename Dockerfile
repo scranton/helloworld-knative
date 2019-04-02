@@ -4,7 +4,7 @@
 FROM golang as builder
 
 # Copy local code to the container image.
-WORKDIR /go/src/github.com/knative/docs/helloworld
+WORKDIR /go/src/github.com/scottcranton/helloworld-knative
 COPY . .
 
 # Build the helloworld-knative command inside the container.
@@ -17,7 +17,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -v -o helloworld
 FROM alpine
 
 # Copy the binary to the production image from the builder stage.
-COPY --from=builder /go/src/github.com/knative/docs/helloworld/helloworld /helloworld
+COPY --from=builder /go/src/github.com/scottcranton/helloworld-knative/helloworld /helloworld
 
 # Service must listen to $PORT environment variable.
 # This default value facilitates local development.

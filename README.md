@@ -40,14 +40,17 @@ kubectl apply --filename service.yaml
 Verify domain URL for service. Should be `helloworld-go.default.example.com`
 
 ```shell
-kubectl get ksvc helloworld-go -n default --output=custom-columns=NAME:.metadata.name,DOMAIN:.status.domain
+kubectl get kservice helloworld-go \
+  --namespace default \
+  --output=custom-columns=NAME:.metadata.name,DOMAIN:.status.domain
 ```
 
-And call service
+And call service. Note: the `curl --connect-to` option is only required when calling locally against minikube as that
+option will add the correct host and sni headers to the request, and send the request to the host and port pair returned
+from `glooctl proxy address`.
 
 ```shell
-CLUSTERINGRESS_URL=$(glooctl proxy url --name clusteringress-proxy)
-curl -H "Host: helloworld-go.default.example.com" ${CLUSTERINGRESS_URL}
+curl --connect-to helloworld-go.default.example.com:80:$(glooctl proxy address --name clusteringress-proxy) http://helloworld-go.default.example.com
 ```
 
 To Cleanup, delete the resources
@@ -61,8 +64,8 @@ kubectl delete --filename service.yaml
 Run `docker build` with your Docker Hub username.
 
 ```shell
-docker build -t {docker username}/helloworld-go .
-docker push {docker username}/helloworld-go
+docker build -t ${DOCKER_USERNAME}/helloworld-go .
+docker push ${DOCKER_USERNAME}/helloworld-go
 ```
 
 Deploy the service. Again, make sure you updated username in service.yaml file, i.e. replace image reference
@@ -75,14 +78,15 @@ kubectl apply --filename service.yaml
 Verify domain URL for service. Should be `helloworld-go.default.example.com`
 
 ```shell
-kubectl get ksvc helloworld-go -n default --output=custom-columns=NAME:.metadata.name,DOMAIN:.status.domain
+kubectl get kservice helloworld-go \
+  --namespace default \
+  --output=custom-columns=NAME:.metadata.name,DOMAIN:.status.domain
 ```
 
 And Test your service
 
 ```shell
-CLUSTERINGRESS_URL=$(glooctl proxy url --name clusteringress-proxy)
-curl -H "Host: helloworld-go.default.example.com" ${CLUSTERINGRESS_URL}
+curl --connect-to helloworld-go.default.example.com:80:$(glooctl proxy address --name clusteringress-proxy) http://helloworld-go.default.example.com
 ```
 
 To Cleanup, delete the resources
@@ -97,8 +101,11 @@ To install Knative Build, do the following. I'm using the `kaninko` build templa
 as well
 
 ```shell
-kubectl apply --filename https://github.com/knative/build/releases/download/v0.4.0/build.yaml
-kubectl apply --filename https://raw.githubusercontent.com/knative/build-templates/master/kaniko/kaniko.yaml
+kubectl apply \
+  --filename https://github.com/knative/build/releases/download/v0.4.0/build.yaml
+
+kubectl apply \
+  --filename https://raw.githubusercontent.com/knative/build-templates/master/kaniko/kaniko.yaml
 ```
 
 To verify the Knative Build install, do the following.
@@ -107,42 +114,47 @@ To verify the Knative Build install, do the following.
 kubectl get pods --namespace knative-build
 ```
 
-I'd encourage forking this repo so you can push code changes and see them in your environment.
+I'd encourage forking this GitHub repository so you can push code changes and see them in your environment.
 
-Update `secret.yaml` with base64 encoded versions of your Docker Hub credentials
+Create a Kubernetes secret for your Docker Hub account that will allow Knative build to push your image. You also need to annotate the secret to indicate its for Docker. More details in [Guiding credential selection](https://www.knative.dev/docs/build/auth/#guiding-credential-selection)
 
-```yaml
-piVersion: v1
-kind: Secret
-metadata:
-  name: basic-user-pass
-  annotations:
-    build.knative.dev/docker-0: https://index.docker.io/v1/
-type: kubernetes.io/basic-auth
-stringData:
-  username: { Docker Hub username | base64 }
-  password: { Docker Hub password | base64 }
+```shell
+kubectl create secret generic basic-user-pass \
+  --type="kubernetes.io/basic-auth" \
+  --from-literal=username=${DOCKER_USERNAME} \
+  --from-literal=password=${DOCKER_PASSWORD}
+
+kubectl annotate secret basic-user-pass \
+  build.knative.dev/docker-0=https://index.docker.io/v1/
 ```
 
-Update `service.yaml` with your Docker Hub information.
+It should result in a secret like the following.
+
+```shell
+kubectl describe secret basic-user-pass
+
+Name:         basic-user-pass
+Namespace:    default
+Labels:       <none>
+Annotations:  build.knative.dev/docker-0: https://index.docker.io/v1/
+
+Type:  kubernetes.io/basic-auth
+
+Data
+====
+username:  12 bytes
+password:  24 bytes
+```
+
+Verify that `serviceaccount.yaml` references your secret.
 
 ```yaml
-apiVersion: serving.knative.dev/v1alpha1
-kind: Service
+apiVersion: v1
+kind: ServiceAccount
 metadata:
-  name: helloworld-go
-  namespace: default
-spec:
-  runLatest:
-    configuration:
-      revisionTemplate:
-        spec:
-          container:
-            image: docker.io/{ Docker Hub username }/helloworld-go
-            imagePullPolicy: Always
-            env:
-              - name: TARGET
-                value: "Go Sample v1"
+  name: build-bot
+secrets:
+  - name: basic-user-pass
 ```
 
 Update `service-build.yaml` with your GitHub and Docker usernames. This manifest will use Knative Build to create an image
@@ -187,10 +199,12 @@ spec:
 To Deploy, apply the following manifests
 
 ```shell
-kubectl apply --filename secret.yaml --filename serviceaccount.yaml --filename service-build.yaml
+kubectl apply \
+  --filename serviceaccount.yaml \
+  --filename service-build.yaml
 ```
 
-Then you can watch the build and deployment happening. 
+Then you can watch the build and deployment happening.
 
 ```shell
 kubectl get pods --watch
@@ -202,20 +216,25 @@ then test your deployment.
 Verify domain URL for service. Should be `helloworld-go.default.example.com`
 
 ```shell
-kubectl get ksvc helloworld-go -n default  --output=custom-columns=NAME:.metadata.name,DOMAIN:.status.domain
+kubectl get kservice helloworld-go \
+  --namespace default \
+  --output=custom-columns=NAME:.metadata.name,DOMAIN:.status.domain
 ```
 
 And Test your service
 
 ```shell
-CLUSTERINGRESS_URL=$(glooctl proxy url --name clusteringress-proxy)
-curl -H "Host: helloworld-go.default.example.com" ${CLUSTERINGRESS_URL}
+curl --connect-to helloworld-go.default.example.com:80:$(glooctl proxy address --name clusteringress-proxy) http://helloworld-go.default.example.com
 ```
 
 ## Cleanup
 
 ```shell
-kubectl delete --filename secret.yaml --filename serviceaccount.yaml --filename service-build.yaml
+kubectl delete \
+  --filename serviceaccount.yaml \
+  --filename service-build.yaml
+
+kubectl delete secret basic-user-pass
 ```
 
 ## See Also

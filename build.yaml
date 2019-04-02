@@ -6,7 +6,7 @@ spec:
   serviceAccountName: build-bot
   source:
     git:
-      url: https://github.com/{ Docker Hub username }/helloworld-knative
+      url: https://github.com/{ GitHub username }/helloworld-knative
       revision: master
   template:
     name: kaniko
